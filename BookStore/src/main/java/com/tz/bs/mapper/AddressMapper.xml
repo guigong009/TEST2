@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+  <mapper namespace="com.tz.bs.mapper.AddressMapper">
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    <!-- 根据id查询地址信息 -->
+     <select id="selectAddrByID" parameterType="Long" resultType="com.tz.bs.entity.Address">
+         select * from bs_address where addressid=#{value}
+     </select>
+     
+     <!-- 根据用户id查询是默认地址的地址 -->
+     <select id="selectDefAdd" parameterType="Long" resultType="com.tz.bs.entity.Address">
+         select * from bs_address where auser_id=#{user.userid} and isDefault='1'
+     </select>
+     <!-- 根据id删除一个地址信息 -->
+     <delete id="deleteAddr" parameterType="Long">
+         delete from bs_address where addressid=#{value}
+     </delete>
+     
+     <!--根据用户id查询所有的地址信息  -->
+     <select id="selectAddrsByUserID" parameterType="Long" resultType="com.tz.bs.entity.Address">
+         select * from bs_address where auser_id=#{user.userid} 
+     </select>
+     
+     <!--插入一个地址信息  -->
+     <insert id="insertAddr" parameterType="com.tz.bs.entity.Address">
+        insert into bs_address values(bs_address_id.nextval,#{area},#{detailaddress},#{emailcode},#{reciver},#{tel},#{isDefault},#{user.userid})
+     </insert>
+     
+     <!--更新一个地址信息  -->
+     <update id="updateAddr" parameterType="com.tz.bs.entity.Address">
+         update bs_address set area=#{area},detailaddress=#{detailaddress},emailcode=#{emailcode},reciver=#{reciver},tel=#{tel},isDefault=#{isDefault},auser_id=#{user.userid} where addressid=#{addressid}
+     </update>
+     
+     <!-- 根据用户id清除默认地址  -->
+     <!-- <delete id="cleanDefaultAddress" parameterType="Long">
+         delete from bs_address where auser_id=#{value} and isdefault='1'
+     </delete> -->
+     <update id="cleanDefaultAddress" parameterType="Long">
+         update bs_address set detailaddress=null where auser_id=#{value} and isdefault='1'
+     </update>
+  </mapper>

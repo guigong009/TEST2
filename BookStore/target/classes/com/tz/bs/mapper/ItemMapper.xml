@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+  <mapper namespace="com.tz.bs.mapper.ItemMapper">
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    <!-- 根据id查询订单明细 -->
+     <select id="selectItemByID" parameterType="Long" resultType="com.tz.bs.entity.OrderItem">
+        select * from bs_orderitem where itemId=#{itemId}
+     </select>
+     
+     <!-- 根据订单id查询所有订单明细 -->
+     <select id="selectItemByOrderID" parameterType="Long" resultType="com.tz.bs.entity.OrderItem">
+        select * from bs_orderitem where order_id=#{order.orderId}
+     </select>
+     
+     <!-- 插入一条订单明细数据(OrderItem和order的id两个参数) -->
+     <insert id="insertItem">
+       insert into bs_orderitem(itemid,book_isbn,book_name,book_author,count,unit_price,allPrice,book_url,order_id) values(bs_orderitem_id.nextval,#{item.book_isbn},#{item.book_name},#{item.book_author},#{item.count},#{item.unit_price},#{item.allPrice},#{item.book_url},#{orderid})
+     </insert>
+     
+     <!--批量插入订单明细(本质就是插入一条)  -->
+     <insert id="insertItemBitch">
+     BEGIN  
+    <foreach collection="items" item="item" index="index" separator="">  
+        insert into  bs_orderitem
+        (itemid,book_isbn,book_name,book_author,count,unit_price,allPrice,book_url,order_id)  
+        VALUES  
+        (  
+         bs_orderitem_id.nextval,#{item.book_isbn,jdbcType=VARCHAR},#{item.book_name,jdbcType=VARCHAR},  
+        #{item.book_author,jdbcType=VARCHAR},#{item.count,jdbcType=INTEGER}, #{item.unit_price,jdbcType=FLOAT}, #{item.allPrice,jdbcType=FLOAT}, #{item.book_url,jdbcType=VARCHAR}, #{item.order.orderId,jdbcType=INTEGER} );  
+    </foreach>  
+    COMMIT;  
+    END;  
+     </insert>
+     
+     <!-- 根据订单id删除一条记录 -->
+     <delete id="deleteItemsByOrderID" parameterType="Long">
+          delete from bs_orderitem where order_id=#{order.orderId}
+     </delete>
+  </mapper>

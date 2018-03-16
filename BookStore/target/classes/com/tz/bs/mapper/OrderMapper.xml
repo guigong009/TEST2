@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+  <mapper namespace="com.tz.bs.mapper.OrderMapper">
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    
+    <!-- 分页查询的resultMap -->
+    <resultMap type="order" id="orderUser">
+		<id property="orderId" column="orderId" />
+		<result property="orderNum" column="orderNum" />
+		<result property="createDate" column="createDate" />
+		<result property="orderStatus" column="orderStatus" />
+		<result property="user.userid" column="ouser_id" />
+		<result property="total" column="total" />
+		<association property="address" column="address_id"
+			select="com.tz.bs.mapper.AddressMapper.selectAddrByID"></association>
+		<collection property="items" column="orderId"
+			select="com.tz.bs.mapper.ItemMapper.selectItemByOrderID">
+		</collection>
+	</resultMap>
+    <!-- 根据id查询订单 -->
+     <select id="selectOrderByID" parameterType="Long" resultType="com.tz.bs.entity.Order">
+         select * from bs_order where orderId=#{value}
+     </select>
+     
+     <!-- 根据用户id查询出订单 -->
+     <select id="selectOrderByUserId" parameterType="Long" resultType="com.tz.bs.entity.Order">
+         select * from bs_order where ouser_id=#{user.userid}
+     </select>
+     
+     <!-- 插入一个订单-->
+     <insert id="insertOrder" parameterType="com.tz.bs.entity.Order">
+          <selectKey  keyProperty="orderId" order="BEFORE" resultType="Long">
+     		select bs_order_id.nextval from dual
+     	  </selectKey>
+         insert into bs_order(orderId,orderNum,createDate,ouser_id,orderStatus,address_id,total)
+           values(#{orderId},#{orderNum},#{createDate},#{user.userid},#{orderStatus},#{address.addressid},#{total})
+     </insert>
+     
+     <!-- 更新一个订单 -->
+     <update id="updateOrder" parameterType="com.tz.bs.entity.Order">
+         update bs_order set orderNum=#{orderNum},createDate=#{createDate},ouser_id=#{user.userid},orderStatus=#{orderStatus},address_id=#{address.addressid},total=#{total} where orderId=#{orderId}
+     </update>
+     
+     <!-- 分页查询订单 -->
+     <select id="selectOrderPageByUserID" resultMap="orderUser">
+            select outer_.* from
+		(
+		select rownum rownum_,core_.* from
+		(
+		select * from
+		bs_order
+		<where>
+
+			<if test="search!=null">
+				<if test="search.orderNum!=null">
+					orderNum like '%'||#{search.orderNum}||'%'
+				</if>
+				<if test="search.beginDate!=null">
+					and createDate>=#{search.beginDate}
+				</if>
+				<if test="search.endDate!=null">
+					and createDate &lt;=#{search.endDate}
+				</if>
+				<if test="search.orderStatus!=null">
+					and orderStatus =#{search.orderStatus}
+				</if>
+			</if>
+
+			and ouser_id=#{uid}
+		</where>
+		) core_ where rownum &lt; =#{pageNow}*#{pageSize}
+		)
+		outer_ where
+		outer_.rownum_ &gt;(#{pageNow}-1)*#{pageSize}
+
+		<if test="search!=null">
+
+			<if test="search.isOrderByTime==1">
+				order by createDate asc
+			</if>
+			<if test="search.isOrderByTime==0">
+				order by createDate desc
+			</if>
+		</if>
+     </select>
+     
+     <!--根据条件分页查询的数量  -->
+     <select id="countOrderByUserIDAndSearch" resultType="Integer">
+		select count(1) from
+		bs_order 
+		<where>
+			<if test="search!=null">
+				<if test="search.orderNum!=null">
+					orderNum like '%'||#{search.orderNum}||'%'
+				</if>
+				<if test="search.beginDate!=null">
+					and createDate>=#{search.beginDate}
+				</if>
+				<if test="search.endDate!=null">
+					and createDate &lt;=#{search.endDate}
+				</if>
+				<if test="search.orderStatus!=null">
+					and orderStatus =#{search.orderStatus}
+				</if>
+			</if>
+			and ouser_id=#{uid}
+		</where>
+	</select>
+     
+     <!-- 通过id删除一个订单 -->
+     <delete id="deleteOrderByID" parameterType="Long">
+         delete from bs_order where orderId=#{orderId}
+     </delete>
+     
+     <!-- 根据订单编号查询订单 -->
+     <select id="selectOrderByOrderNum" parameterType="String" resultType="com.tz.bs.entity.Order">
+         select * from bs_order where orderNum=#{orderNum}
+     </select>
+  </mapper>

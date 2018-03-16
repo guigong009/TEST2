@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+  <mapper namespace="com.tz.bs.mapper.UserMapper">
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    <!-- 根据id查询用户 -->
+     <select id="selectUser" parameterType="Long" resultType="com.tz.bs.entity.User">
+         select * from bs_user where userid=#{value}
+     </select>
+     
+     <!-- 根据用户名查询用户 -->
+     <select id="selectUserByUserName" resultType="com.tz.bs.entity.User">
+         select * from bs_user where userName=#{name}
+     </select>
+     
+     <!-- 插入一个用户 -->
+     <insert id="insertUser" parameterType="com.tz.bs.entity.User">
+           
+         insert into bs_user(userid,userName,password,phone,email,company)
+           values(bs_user_id.nextval,#{userName},#{password},#{phone},#{email},#{company})
+     </insert>
+     
+     <!-- 根据id更新一个用户 -->
+     <update id="updateUser" parameterType="com.tz.bs.entity.User">
+         update bs_user set userName=#{userName},password=#{password},phone=#{phone},email=#{email},company=#{company} where userid=#{userid}
+     </update>
+  </mapper>

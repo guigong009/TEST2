@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+  <mapper namespace="com.tz.bs.mapper.BookMapper">
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+     <!-- 根据id查询图书 -->
+     <select id="selectBookById" parameterType="Integer" resultType="com.tz.bs.entity.Book">
+       select * from bs_book where bookid=#{bookid}
+     </select>
+     
+     <!-- 查询所有图书 -->
+     <select id="selectAllBooks" resultType="com.tz.bs.entity.Book">
+       select * from bs_book
+     </select>
+     
+     <!-- 分页查询 -->
+     <select id="selectBookByPage" resultType="com.tz.bs.entity.Book">
+         select * from(select t.*,rownum rn from
+           (select k.* from bs_book k join bs_category c on k.category_id=c.cateid where c.cateid=#{cateid} ) t where rownum &lt;=#{pageSize}*#{pageNow})
+             where rn &gt;#{pageSize}*(#{pageNow}-1) 
+     </select>
+     
+     <!-- 根据cate的id查询 -->
+     <select id="rowCount" resultType="Integer">
+          select count(*) from bs_book where category_id=#{cate}
+     </select>
+     
+     <!-- 查询所有的category(导航条的分类内容) -->
+     <select id="selectCategory" resultType="com.tz.bs.entity.Category">
+          select * from bs_category
+     </select>
+  </mapper>
